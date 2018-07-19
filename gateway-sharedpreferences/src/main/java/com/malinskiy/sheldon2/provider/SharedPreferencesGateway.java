@@ -143,6 +143,36 @@ public class SharedPreferencesGateway implements IGateway {
                 });
     }
 
+    @Nonnull
+    @Override
+    public Boolean getBoolean(@Nonnull String key, @Nonnull Boolean defaultValue) {
+        return preferences.getBoolean(key, defaultValue);
+    }
+
+    @Nonnull
+    @Override
+    public Float getFloat(@Nonnull String key, @Nonnull Float defaultValue) {
+        return preferences.getFloat(key, defaultValue);
+    }
+
+    @Nonnull
+    @Override
+    public Integer getInteger(@Nonnull String key, @Nonnull Integer defaultValue) {
+        return preferences.getInt(key, defaultValue);
+    }
+
+    @Nonnull
+    @Override
+    public Long getLong(@Nonnull String key, @Nonnull Long defaultValue) {
+        return preferences.getLong(key, defaultValue);
+    }
+
+    @Nonnull
+    @Override
+    public String getString(@Nonnull String key, @Nonnull String defaultValue) {
+        return preferences.getString(key, defaultValue);
+    }
+
     @Override public void putBoolean(@Nonnull String key, @Nonnull Boolean value) {
         preferences.edit()
                    .putBoolean(key, value)
@@ -173,12 +203,24 @@ public class SharedPreferencesGateway implements IGateway {
                    .apply();
     }
 
-    @Nonnull @Override public Observable<Boolean> contains(@Nonnull final String key) {
+    /**
+     *
+     * @deprecated Don't need to call .contains in separate thread (and thus increase complexity
+     * of the program) .contains is quick operation, only the initial getSharedPrefernces call is
+     * slow and needs to be off loaded from the UI thread.
+     *
+     */
+    @Deprecated
+    @Nonnull @Override public Observable<Boolean> containsAsObservable(@Nonnull final String key) {
         return Observable.fromCallable(new Callable<Boolean>() {
             @Override public Boolean call() {
                 return preferences.contains(key);
             }
         });
+    }
+
+    @Nonnull @Override public boolean contains(@Nonnull final String key) {
+        return preferences.contains(key);
     }
 
     @Override public void remove(@Nonnull String key) {

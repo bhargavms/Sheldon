@@ -1,7 +1,7 @@
 package com.malinskiy.sheldon2.codegen.model;
 
-import com.google.auto.common.MoreTypes;
 import com.google.common.base.Preconditions;
+
 import com.malinskiy.sheldon2.codegen.PrefType;
 import com.malinskiy.sheldon2.codegen.ProcessingException;
 import com.malinskiy.sheldon2.codegen.Utils;
@@ -10,15 +10,12 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-
 import javax.annotation.Nonnull;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
 
-public class Getter implements Generatable {
+public class ObservableGetter implements Generatable {
 
     @Nonnull private final String namespace;
     @Nonnull private final ExecutableElement method;
@@ -26,11 +23,11 @@ public class Getter implements Generatable {
     @Nonnull private final DefaultValue defaultValue;
     @Nonnull private final ClassName repositoryClassName;
 
-    public Getter(@Nonnull String namespace,
-                  @Nonnull ExecutableElement method,
-                  @Nonnull String providerFieldName,
-                  @Nonnull DefaultValue defaultValue,
-                  @Nonnull ClassName repositoryClassName) {
+    public ObservableGetter(@Nonnull String namespace,
+                            @Nonnull ExecutableElement method,
+                            @Nonnull String providerFieldName,
+                            @Nonnull DefaultValue defaultValue,
+                            @Nonnull ClassName repositoryClassName) {
 
         this.namespace = Preconditions.checkNotNull(namespace);
         this.method = Preconditions.checkNotNull(method);
@@ -42,7 +39,6 @@ public class Getter implements Generatable {
     @Override public void generateCode(TypeSpec.Builder builder) throws ProcessingException {
         TypeMirror returnType = method.getReturnType();
 
-
         String methodName = method.getSimpleName().toString();
         String prefName = Utils.getName(method);
 
@@ -53,7 +49,7 @@ public class Getter implements Generatable {
 
         String defaultFieldName = defaultValue.getElement().getSimpleName().toString();
 
-        PrefType prefType = Utils.getRawType(method);
+        PrefType prefType = Utils.getType(method);
         switch (prefType) {
             case BOOLEAN:
                 methodBuilder.addStatement(simpleStatement("Boolean", prefName, defaultFieldName));
@@ -71,8 +67,8 @@ public class Getter implements Generatable {
                 methodBuilder.addStatement(simpleStatement("String", prefName, defaultFieldName));
                 break;
             case OBJECT:
-                methodBuilder.addStatement("return $T.getInstance().get($T.class).get(\"" + prefName + "\", " +
-                                defaultFieldName + ", " + providerFieldName + ")", repositoryClassName,
+                methodBuilder.addStatement("return $T.getInstance().get($T.class).observe(\"" + prefName + "\", " +
+                                           defaultFieldName + ", " + providerFieldName + ")", repositoryClassName,
                         defaultValue.getElement().asType());
                 break;
             default:
@@ -83,6 +79,6 @@ public class Getter implements Generatable {
     }
 
     private String simpleStatement(String type, String prefName, String defaultFieldName) {
-        return "return " + providerFieldName + ".get" + type + "(\"" + prefName + "\", " + defaultFieldName + ")";
+        return "return " + providerFieldName + ".observe" + type + "(\"" + prefName + "\", " + defaultFieldName + ")";
     }
 }

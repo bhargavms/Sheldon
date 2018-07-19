@@ -22,6 +22,11 @@ public class TypeAdapter implements IPreferenceAdapter<Type> {
                       });
     }
 
+    @Override
+    public Type get(String key, Type defaultValue, IGateway gateway) {
+        return Type.valueOf(gateway.getString(key, defaultValue.name()));
+    }
+
     @Override public void put(@Nonnull String key, @Nonnull Type value, IGateway gateway) {
         gateway.putString(key, value.name());
     }

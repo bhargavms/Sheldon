@@ -4,6 +4,7 @@ import com.google.auto.common.MoreTypes;
 
 import com.malinskiy.sheldon2.annotation.Default;
 import com.malinskiy.sheldon2.annotation.Get;
+import com.malinskiy.sheldon2.annotation.JustGet;
 import com.malinskiy.sheldon2.annotation.Set;
 
 import javax.lang.model.element.ExecutableElement;
@@ -31,6 +32,13 @@ public class Utils {
         return getType(isSetter ? method.getParameters().get(0).asType() : MoreTypes.asDeclared(method.getReturnType()).getTypeArguments().get(0));
     }
 
+    /**
+     * Get preference type from method element
+     */
+    public static PrefType getRawType(ExecutableElement method) {
+        return getType(method.getReturnType());
+    }
+
     private static PrefType getType(TypeMirror type) {
         if (MoreTypes.isTypeOf(Boolean.class, type)) {
             return PrefType.BOOLEAN;
@@ -53,13 +61,16 @@ public class Utils {
     public static String getName(ExecutableElement method) throws ProcessingException {
         Get getAnnotation = method.getAnnotation(Get.class);
         Set setAnnotation = method.getAnnotation(Set.class);
+        JustGet justGetAnnotation = method.getAnnotation(JustGet.class);
 
-        if (getAnnotation == null && setAnnotation == null) {
-            throw new ProcessingException(method, "No annotations present. Should be either @Get or @Set");
+        if (getAnnotation == null && setAnnotation == null && justGetAnnotation == null) {
+            throw new ProcessingException(method, "No annotations present. Should be either @Get or @Set or @JustGet");
         } else if (getAnnotation == null && setAnnotation != null) {
             return setAnnotation.name();
         } else if (getAnnotation != null && setAnnotation == null) {
             return getAnnotation.name();
+        } else if (justGetAnnotation != null) {
+            return justGetAnnotation.name();
         } else {
             throw new ProcessingException(method, "Method annotated with @Get and @Set");
         }

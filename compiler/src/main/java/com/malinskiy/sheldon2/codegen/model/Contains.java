@@ -30,9 +30,10 @@ public class Contains implements Generatable {
         builder.addMethod(
                 MethodSpec.methodBuilder(method.getSimpleName().toString())
                           .addModifiers(Modifier.PUBLIC)
+                          .addAnnotation(Override.class)
                           .addParameter(String.class, "key")
                           .returns(ParameterizedTypeName.get(Observable.class, Boolean.class))
-                          .addStatement("return " + providerFieldName + ".contains($N)", "key")
+                          .addStatement("return " + providerFieldName + ".containsAsObservable($N)", "key")
                           .build());
     }
 

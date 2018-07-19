@@ -1,15 +1,17 @@
 package com.malinskiy.sheldon2.codegen.model;
 
+import com.google.auto.common.MoreTypes;
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
-
 import com.malinskiy.sheldon2.GatewayBuilder;
 import com.malinskiy.sheldon2.IGateway;
 import com.malinskiy.sheldon2.annotation.Delete;
 import com.malinskiy.sheldon2.annotation.Get;
+import com.malinskiy.sheldon2.annotation.JustContains;
+import com.malinskiy.sheldon2.annotation.JustGet;
 import com.malinskiy.sheldon2.annotation.Preferences;
 import com.malinskiy.sheldon2.annotation.Set;
 import com.malinskiy.sheldon2.codegen.ProcessingException;
@@ -41,6 +43,9 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.Elements;
 
+import io.reactivex.Observable;
+import io.reactivex.annotations.NonNull;
+
 public class Preference {
 
     private static final String SUFFIX = "_Preferences";
@@ -51,10 +56,12 @@ public class Preference {
     @Nonnull private final ClassName repositoryClassName;
     @Nonnull private final Messager messager;
 
+    @Nonnull private final Map<String, ObservableGetter> observableGettersMap = Maps.newHashMap();
     @Nonnull private final Map<String, Getter> gettersMap = Maps.newHashMap();
     @Nonnull private final Map<String, Setter> settersMap = Maps.newHashMap();
     @Nonnull private final Map<String, DefaultValue> defaultsMap = Maps.newHashMap();
     @Nonnull private Optional<Contains> contains = Optional.absent();
+    @NonNull private Optional<com.malinskiy.sheldon2.codegen.model.JustContains> justContains = Optional.absent();
     @Nonnull private Optional<Deleter> deleter = Optional.absent();
 
     public Preference(@Nonnull TypeElement interfaceElement,
@@ -88,8 +95,8 @@ public class Preference {
             if (element.getKind() == ElementKind.METHOD) {
                 ExecutableElement method = (ExecutableElement) element;
                 if (method.getAnnotation(Get.class) != null) {
-                    GetValidator.checkValidGetter(method, defaultsMap);
-                    addGetter(method);
+                    GetValidator.checkValidObservableGetter(method, defaultsMap);
+                    addObservableGetter(method);
                 } else if (method.getAnnotation(Set.class) != null) {
                     SetValidator.checkValidSetter(method, defaultsMap);
                     addSetter(method);
@@ -99,6 +106,12 @@ public class Preference {
                 } else if (method.getAnnotation(com.malinskiy.sheldon2.annotation.Contains.class) != null) {
                     ContainsValidator.checkValidContainsMethod(method);
                     contains = Optional.of(new Contains(method, PROVIDER_FIELD_NAME));
+                } else if (method.getAnnotation(JustGet.class) != null) {
+                    GetValidator.checkValidGetter(method, defaultsMap);
+                    addGetter(method);
+                } else if (method.getAnnotation(JustContains.class) != null) {
+                    ContainsValidator.checkValidJustContainsMethod(method);
+                    justContains = Optional.of(new com.malinskiy.sheldon2.codegen.model.JustContains(method, PROVIDER_FIELD_NAME));
                 } else {
                     throw new ProcessingException(
                             method,
@@ -109,7 +122,7 @@ public class Preference {
         }
 
 
-        ConsistencyValidator.checkConsistency(defaultsMap.keySet(), gettersMap.keySet(), settersMap.keySet());
+        ConsistencyValidator.checkConsistency(defaultsMap.keySet(), observableGettersMap.keySet(), settersMap.keySet());
     }
 
     private void addDefault(VariableElement variable) throws ProcessingException {
@@ -122,6 +135,11 @@ public class Preference {
         String name = Utils.getName(method);
 
         settersMap.put(name, new Setter(namespace, method, PROVIDER_FIELD_NAME, repositoryClassName));
+    }
+
+    private void addObservableGetter(ExecutableElement method) throws ProcessingException {
+        String name = Utils.getName(method);
+        observableGettersMap.put(name, new ObservableGetter(namespace, method, PROVIDER_FIELD_NAME, defaultsMap.get(name), repositoryClassName));
     }
 
     private void addGetter(ExecutableElement method) throws ProcessingException {
@@ -167,12 +185,20 @@ public class Preference {
             setter.generateCode(builder);
         }
 
-        for (Getter getter : gettersMap.values()) {
+        for (ObservableGetter observableGetter : observableGettersMap.values()) {
+            observableGetter.generateCode(builder);
+        }
+
+        for (Getter getter: gettersMap.values()) {
             getter.generateCode(builder);
         }
 
         if (contains.isPresent()) {
             contains.get().generateCode(builder);
+        }
+
+        if (justContains.isPresent()) {
+            justContains.get().generateCode(builder);
         }
 
         if (deleter.isPresent()) {
@@ -187,7 +213,7 @@ public class Preference {
         javaFile.writeTo(filer);
     }
 
-    public void generateUpdateMethod(Elements elementUtils, Filer filer) throws IOException {
-
+    private boolean isOfObservableType(ExecutableElement method) {
+        return MoreTypes.isTypeOf(Observable.class, method.getReturnType());
     }
 }

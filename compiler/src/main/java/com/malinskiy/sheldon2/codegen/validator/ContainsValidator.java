@@ -11,6 +11,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 
 import io.reactivex.Observable;
+import io.reactivex.annotations.NonNull;
 
 public class ContainsValidator {
     public static void checkValidContainsMethod(@Nonnull ExecutableElement method) throws ProcessingException {
@@ -24,6 +25,21 @@ public class ContainsValidator {
             throw new ProcessingException(
                     method,
                     "Should return Observable"
+            );
+        }
+    }
+
+    public static void checkValidJustContainsMethod(@NonNull ExecutableElement method) throws ProcessingException {
+        List<? extends VariableElement> parameters = method.getParameters();
+        if (parameters.size() != 1) {
+            throw new ProcessingException(method,
+                    "Invalid number of parameters for justContains method. Should be one String parameter");
+        }
+
+        if (!MoreTypes.isTypeOf(Boolean.class, method.getReturnType())) {
+            throw new ProcessingException(
+                    method,
+                    "Should return Boolean"
             );
         }
     }

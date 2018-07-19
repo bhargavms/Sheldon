@@ -16,6 +16,16 @@ public interface IGateway {
 
     @Nonnull Observable<String> observeString(@Nonnull String key, @Nonnull String defaultValue);
 
+    @Nonnull Boolean getBoolean(@Nonnull String key, @Nonnull Boolean defaultValue);
+
+    @Nonnull Float getFloat(@Nonnull String key, @Nonnull Float defaultValue);
+
+    @Nonnull Integer getInteger(@Nonnull String key, @Nonnull Integer defaultValue);
+
+    @Nonnull Long getLong(@Nonnull String key, @Nonnull Long defaultValue);
+
+    @Nonnull String getString(@Nonnull String key, @Nonnull String defaultValue);
+
     void putBoolean(@Nonnull String key, @Nonnull Boolean value);
 
     void putFloat(@Nonnull String key, @Nonnull Float value);
@@ -26,7 +36,10 @@ public interface IGateway {
 
     void putString(@Nonnull String key, @Nonnull String value);
 
-    @Nonnull Observable<Boolean> contains(@Nonnull String key);
+    @Deprecated
+    @Nonnull Observable<Boolean> containsAsObservable(@Nonnull String key);
+
+    boolean contains(@Nonnull String key);
 
     void remove(@Nonnull String key);
 

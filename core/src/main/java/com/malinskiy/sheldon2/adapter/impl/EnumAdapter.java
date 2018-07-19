@@ -27,6 +27,11 @@ public class EnumAdapter<T extends Enum<T>> implements IPreferenceAdapter<T> {
         });
     }
 
+    @Override
+    public T get(String key, T defaultValue, IGateway gateway) {
+        return fromString(gateway.getString(key, toString(defaultValue)));
+    }
+
     @Override public void put(@Nonnull String key, @Nonnull T value, IGateway gateway) {
         gateway.putString(key, toString(value));
     }

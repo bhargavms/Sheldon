@@ -4,6 +4,8 @@ import com.malinskiy.sheldon2.annotation.Contains;
 import com.malinskiy.sheldon2.annotation.Default;
 import com.malinskiy.sheldon2.annotation.Delete;
 import com.malinskiy.sheldon2.annotation.Get;
+import com.malinskiy.sheldon2.annotation.JustContains;
+import com.malinskiy.sheldon2.annotation.JustGet;
 import com.malinskiy.sheldon2.annotation.Preferences;
 import com.malinskiy.sheldon2.annotation.Set;
 
@@ -20,6 +22,8 @@ public interface MainPreferences {
 
     @Set(name = "name") void setPolicyName(String name);
 
+    @JustGet(name = "name") String getPolicyNameSync();
+
 
     @Default(name = "enum") Type DEFAULT_ENUM = Type.THREE;
 
@@ -28,6 +32,8 @@ public interface MainPreferences {
     @Set(name = "enum") void setEnum(Type value);
 
     @Contains Observable<Boolean> contains(String key);
+
+    @JustContains Boolean justContains(String key);
 
     @Delete void remove(String key);
 }

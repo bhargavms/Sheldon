@@ -80,7 +80,7 @@ public abstract class BaseSharedPreferenceTypeTest<T> {
 
     @Test
     public void testContains() throws Exception {
-        TestObserver<Boolean> observer = gateway.contains(PREFERENCE_KEY).test();
+        TestObserver<Boolean> observer = gateway.containsAsObservable(PREFERENCE_KEY).test();
 
         observer.assertValue(false);
         observer.assertComplete();

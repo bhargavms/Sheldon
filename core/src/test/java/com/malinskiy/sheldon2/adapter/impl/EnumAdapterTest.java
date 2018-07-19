@@ -11,6 +11,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -45,6 +46,18 @@ public class EnumAdapterTest {
         verify(observer).onNext(NUMBER.TWO);
         verify(observer).onComplete();
         verify(observer, never()).onError(any(Throwable.class));
+    }
+
+    @Test
+    public void testGet() {
+        NUMBER expectedNumber = NUMBER.TWO;
+        when(gateway.getString("testKey", NUMBER.ONE.name()))
+                .thenReturn(expectedNumber.name());
+
+        NUMBER actualNumber = adapter.get("testKey", NUMBER.ONE, gateway);
+
+        verify(gateway).getString("testKey", NUMBER.ONE.name());
+        assertEquals(actualNumber, expectedNumber);
     }
 
     @Test
