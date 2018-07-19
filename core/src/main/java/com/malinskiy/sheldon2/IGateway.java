@@ -2,6 +2,7 @@ package com.malinskiy.sheldon2;
 
 import javax.annotation.Nonnull;
 
+import io.reactivex.Completable;
 import io.reactivex.Observable;
 
 public interface IGateway {
@@ -40,6 +41,16 @@ public interface IGateway {
     @Nonnull Observable<Boolean> containsAsObservable(@Nonnull String key);
 
     boolean contains(@Nonnull String key);
+
+    Completable putBooleanSync(@Nonnull String key, @Nonnull Boolean value);
+
+    Completable putFloatSync(@Nonnull String key, @Nonnull Float value);
+
+    Completable putIntegerSync(@Nonnull String key, @Nonnull Integer value);
+
+    Completable putLongSync(@Nonnull String key, @Nonnull Long value);
+
+    Completable putStringSync(@Nonnull String key, @Nonnull String value);
 
     void remove(@Nonnull String key);
 

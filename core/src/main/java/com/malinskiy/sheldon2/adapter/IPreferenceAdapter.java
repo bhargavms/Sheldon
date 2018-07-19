@@ -4,6 +4,7 @@ import com.malinskiy.sheldon2.IGateway;
 
 import javax.annotation.Nonnull;
 
+import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.annotations.NonNull;
 
@@ -16,4 +17,6 @@ public interface IPreferenceAdapter<T> {
     T get(@NonNull String key, @NonNull T defaultValue, @NonNull IGateway gateway);
 
     void put(@Nonnull String key, @Nonnull T value, IGateway gateway);
+
+    Completable putSync(@Nonnull String key, @Nonnull T value, IGateway gateway);
 }
